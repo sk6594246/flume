@@ -18,7 +18,7 @@ Build process maps with lanes, typed nodes and edges, then export SVG or inspect
 - React 19 + TypeScript
 - TanStack React Router + TanStack Start
 - Vite 8 + Tailwind CSS 4
-- Nitro (Vercel preset) for production builds
+- **Cloudflare Workers** (`@cloudflare/vite-plugin` + Wrangler)
 
 ## Local development
 
@@ -30,33 +30,36 @@ npm run dev
 App runs at `http://localhost:8080`.
 
 ```bash
-npm run build    # production build + migrations
-npm run preview  # serve the build
+npm run build
+npm run preview
 npm run typecheck
 ```
 
-## Deploy
+## Deploy (GitHub Actions → Cloudflare Workers)
 
-This project is configured for **Vercel**:
+On every push to `main`, `.github/workflows/deploy.yml` builds and deploys with Wrangler.
 
-1. Import the GitHub repo in the [Vercel dashboard](https://vercel.com/new)
-2. Framework preset: Vite (or leave automatic)
-3. Build command: `npm run build`
-4. Install uses `vercel.json` (`npm install --omit=dev`)
+### One-time setup
 
-Environment (optional):
+1. Cloudflare dashboard → create API token (Edit Cloudflare Workers)
+2. GitHub repo → **Settings → Secrets and variables → Actions**
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
+3. Push to `main` (or run the workflow manually)
 
-- `VITE_AUTH_ENABLED=false` (default behaviour in the workspace)
+Manual deploy:
+
+```bash
+npm run deploy
+```
 
 ## Project layout
 
 ```
-src/
-  components/flume/   # Studio UI (canvas, palette, inspector, code pane)
-  lib/flume/          # Diagram types, ops, store, SVG export, templates
-  routes/             # TanStack file routes
-scripts/              # Build helpers, PWA plugin, migrations
-public/               # Static assets
+src/components/flume/   # Studio UI
+src/lib/flume/          # Diagram types, ops, store, SVG export
+.github/workflows/deploy.yml
+wrangler.jsonc
 ```
 
 ## License
