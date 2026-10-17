@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,11 +26,29 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: npm
+          # LTS — Node 22 + npm has hit "Exit handler never called" on runners
+          node-version: "20"
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund --legacy-peer-deps
+        env:
+          # Playwright is a test-only dep; skip browser download in CI build
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          npm_config_fund: "false"
+          npm_config_audit: "false"
+          npm_config_legacy_peer_deps: "true"
+          npm_config_maxsockets: "3"
+        run: |
+          set -e
+          npm --version
+          node --version
+          # Prefer ci when lockfile is in sync; fall back to install
+          if npm ci; then
+            echo "npm ci ok"
+          else
+            echo "npm ci failed — falling back to npm install"
+            rm -rf node_modules
+            npm install
+          fi
 
       - name: Build for GitHub Pages
         run: npm run build:pages
@@ -50,6 +68,7 @@ jobs:
           else
             echo "No static output found" >&2
             find . -maxdepth 3 -type d \( -name dist -o -name public -o -name client \) 2>/dev/null | head
+            ls -la
             exit 1
           fi
 
