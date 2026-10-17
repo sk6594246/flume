@@ -18,33 +18,34 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: pnpm
 
       - name: Install dependencies
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-          npm_config_fund: "false"
-          npm_config_audit: "false"
-          npm_config_legacy_peer_deps: "true"
         run: |
           set -euo pipefail
-          echo "node $(node -v) npm $(npm -v)"
-          rm -rf node_modules
-          npm install --no-audit --no-fund --legacy-peer-deps
+          echo "node $(node -v) pnpm $(pnpm -v)"
+          pnpm install --no-frozen-lockfile --prefer-offline=false
           test -f node_modules/vite/package.json
-          test -x node_modules/.bin/vite || test -f node_modules/.bin/vite
-          npx vite --version
+          pnpm exec vite --version
 
       - name: Build for GitHub Pages
-        run: npm run build:pages
+        run: pnpm run build:pages
         env:
           GITHUB_PAGES: "true"
           VITE_AUTH_ENABLED: "false"
