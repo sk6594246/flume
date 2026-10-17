@@ -1,0 +1,12 @@
+feature list: 1. Visual flowchart studio (canvas + lanes rows/columns)
+feature list: 2. Node palette for start/end/process/decision/data/document/subprocess/database/manual/delay/note/parallel
+feature list: 3. Edge kinds sequence/message/conditional/default/association/async
+feature list: 4. Inspector panel for selected nodes/edges/lanes
+feature list: 5. Code pane (serialize diagram to script/language)
+feature list: 6. SVG export + download
+feature list: 7. Undo/redo, duplicate, delete, nudge, zoom/pan tools
+feature list: 8. Templates / starter maps
+feature list: 9. Keyboard shortcuts (Cmd/Ctrl+Z/Y/D etc.)
+feature list: 10. Mobile-friendly sheets (shapes / inspect / script / map)
+feature list: 11. TanStack Start + Vite production build (Vercel-ready nitro preset)
+feature list: 12. Auth/DB optional and currently OFF

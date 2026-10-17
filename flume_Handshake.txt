@@ -1,0 +1,44 @@
+Project: flume
+Created: 2026-10-16
+Status: Source extracted from grok-workspace.zip; ready for deploy planning
+
+## What it is
+Flume — visual flowchart / process-diagram studio SPA.
+- Node kinds: start, end, process, decision, data, document, subprocess, database, manual, delay, note, parallel
+- Edge kinds: sequence, message, conditional, default, association, async
+- Lanes (rows/columns), undo/redo, palette, inspector, code pane, SVG export, templates
+- Client-side state (Zustand-style store); no auth/DB required for core diagramming (VITE_AUTH_ENABLED=false, deploy.database=false)
+
+## Tech stack
+- React 19 + TypeScript
+- TanStack React Router + TanStack Start
+- Vite 8 + Tailwind CSS 4
+- Nitro (preset vercel) for SSR/server build
+- PGLite / Kysely / better-auth present but auth off by default
+- Lucide icons, Radix UI primitives
+- Package name in package.json: app-builder-workspace
+
+## Source location
+artifacts/flume/
+  package.json, package-lock.json, vite.config.ts, vercel.json, tsconfig.json
+  src/ (components/flume/*, lib/flume/*, routes/, styles.css)
+  scripts/, public/, server/, migrations/
+
+## Deploy notes (from workspace contract)
+- Designed to build with `npm run build` and deploy to Vercel (nitro vercel preset)
+- vercel.json: installCommand omit-dev
+- Auth disabled in .grok/app-env.json style env; no Neon/DB required for diagram core
+- GitHub owner available: sk6594246
+
+## Current status (2026-10-16)
+- Clean source in artifacts/flume/ + flume-source.tar.gz + DEPLOY.md
+- GitHub repo created: https://github.com/sk6594246/flume (public)
+- Seeded on main: README, package.json, .gitignore, vercel.json, tsconfig,
+  routes, router, og/site.json, partial glyph.tsx, partial types.ts
+- Full tree not fully uploaded via API (payload limits) — complete via DEPLOY.md
+- Not yet on Vercel
+
+## Next steps
+1. Run DEPLOY.md: git push full artifacts/flume tree to origin main
+2. Import repo in Vercel → npm run build
+3. Optional: strip Grok-workspace-only scripts after full sync
