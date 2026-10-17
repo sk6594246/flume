@@ -1,41 +1,39 @@
-# Deploy Flume to GitHub (complete source)
+# Deploy Flume (Cloudflare Workers via GitHub Actions)
 
-The public repo https://github.com/sk6594246/flume was created and seeded with
-README, package.json, routes, and a partial tree. The **full** workspace source
-lives in this folder (and in `flume-source.tar.gz`).
+Vercel is **not** used. Production target is **Cloudflare Workers**.
 
-## Push the complete source from your machine
+## Secrets (GitHub repo)
+
+| Secret | Where to get it |
+|--------|------------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens → Create (Workers Edit) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard sidebar / Workers overview |
+
+## Workflow
+
+File: `.github/workflows/deploy.yml`
+
+- Trigger: push to `main` or manual `workflow_dispatch`
+- Steps: checkout → `npm ci` → `npm run build` → `wrangler deploy`
+
+## Local full push of source
+
+If the remote tree is incomplete, from this folder:
 
 ```bash
-# 1. Extract or use the project folder
-cd path/to/artifacts/flume   # or: tar xzf flume-source.tar.gz
-
-# 2. Init / link remote (if starting fresh)
 git init
 git remote add origin https://github.com/sk6594246/flume.git
-
-# 3. Prefer force-sync of full tree onto main
 git checkout -B main
 git add -A
-git status
-git commit -m "Complete Flume source: studio, canvas, scripts, build config"
+git commit -m "Flume: Cloudflare deploy + full source"
 git push -u origin main --force
 ```
 
-If the remote already has the seeded commits, `--force` overwrites with the full tree (safe for this new repo).
+## Config files that replaced Vercel
 
-## Run locally
-
-```bash
-npm install
-npm run dev
-# http://localhost:8080
-```
-
-## Deploy to Vercel
-
-1. https://vercel.com/new → Import `sk6594246/flume`
-2. Build: `npm run build`
-3. Install command is already in `vercel.json`
-
-Auth/DB stay off unless you set env vars later.
+| Removed | Added / changed |
+|---------|-----------------|
+| `vercel.json` | `wrangler.jsonc` |
+| Nitro preset `vercel` | `@cloudflare/vite-plugin` in `vite.config.ts` |
+| | `.github/workflows/deploy.yml` |
+| | `npm run deploy` → build + wrangler |
