@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-flume
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          npm_config_fund: "false"
+          npm_config_audit: "false"
+          npm_config_legacy_peer_deps: "true"
+        run: |
+          set -euo pipefail
+          echo "node $(node -v) npm $(npm -v)"
+          rm -rf node_modules
+          npm install --no-audit --no-fund --legacy-peer-deps
+          test -f node_modules/vite/package.json
+          test -x node_modules/.bin/vite || test -f node_modules/.bin/vite
+          npx vite --version
+
+      - name: Build for GitHub Pages
+        run: npm run build:pages
+        env:
+          GITHUB_PAGES: "true"
+          VITE_AUTH_ENABLED: "false"
+
+      - name: Resolve publish directory
+        id: out
+        run: |
+          if [ -d dist ]; then
+            echo "dir=dist" >> "$GITHUB_OUTPUT"
+          elif [ -d .output/public ]; then
+            echo "dir=.output/public" >> "$GITHUB_OUTPUT"
+          elif [ -d build/client ]; then
+            echo "dir=build/client" >> "$GITHUB_OUTPUT"
+          else
+            echo "No static output found" >&2
+            find . -maxdepth 3 -type d \( -name dist -o -name public -o -name client \) 2>/dev/null | head
+            ls -la
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.out.outputs.dir }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,41 +1,21 @@
-# Deploy Flume to GitHub (complete source)
+# Deploy Flume — GitHub Pages only
 
-The public repo https://github.com/sk6594246/flume was created and seeded with
-README, package.json, routes, and a partial tree. The **full** workspace source
-lives in this folder (and in `flume-source.tar.gz`).
+No Vercel. No Cloudflare.
 
-## Push the complete source from your machine
+## Enable Pages
 
-```bash
-# 1. Extract or use the project folder
-cd path/to/artifacts/flume   # or: tar xzf flume-source.tar.gz
+1. GitHub → **sk6594246/flume** → Settings → Pages
+2. Build and deployment → Source: **GitHub Actions**
 
-# 2. Init / link remote (if starting fresh)
-git init
-git remote add origin https://github.com/sk6594246/flume.git
+## Workflow
 
-# 3. Prefer force-sync of full tree onto main
-git checkout -B main
-git add -A
-git status
-git commit -m "Complete Flume source: studio, canvas, scripts, build config"
-git push -u origin main --force
-```
+`.github/workflows/deploy.yml` on push to `main`:
 
-If the remote already has the seeded commits, `--force` overwrites with the full tree (safe for this new repo).
+1. `npm ci`
+2. `GITHUB_PAGES=true npm run build:pages`
+3. Upload static output (`dist` or `.output/public`)
+4. Deploy with `actions/deploy-pages`
 
-## Run locally
+## URL
 
-```bash
-npm install
-npm run dev
-# http://localhost:8080
-```
-
-## Deploy to Vercel
-
-1. https://vercel.com/new → Import `sk6594246/flume`
-2. Build: `npm run build`
-3. Install command is already in `vercel.json`
-
-Auth/DB stay off unless you set env vars later.
+https://sk6594246.github.io/flume/
