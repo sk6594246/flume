@@ -1,0 +1,70 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-flume
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build for GitHub Pages
+        run: npm run build:pages
+        env:
+          GITHUB_PAGES: "true"
+          VITE_AUTH_ENABLED: "false"
+
+      - name: Resolve publish directory
+        id: out
+        run: |
+          if [ -d dist ]; then
+            echo "dir=dist" >> "$GITHUB_OUTPUT"
+          elif [ -d .output/public ]; then
+            echo "dir=.output/public" >> "$GITHUB_OUTPUT"
+          elif [ -d build/client ]; then
+            echo "dir=build/client" >> "$GITHUB_OUTPUT"
+          else
+            echo "No static output found" >&2
+            find . -maxdepth 3 -type d \( -name dist -o -name public -o -name client \) 2>/dev/null | head
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.out.outputs.dir }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
